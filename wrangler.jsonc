@@ -1,0 +1,24 @@
+{
+  // Cloudflare deployment settings for samuihonestly.com
+  // Without this file Wrangler generates one at build time and picks its own defaults.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "samuihonestly",
+  "compatibility_date": "2026-08-16",
+
+  // Serve the repository root as a static site
+  "assets": {
+    "directory": "."
+  },
+
+  // Keep observability on — free, and useful for debugging deploys
+  "observability": {
+    "enabled": true
+  },
+
+  // The *.workers.dev URL is disabled: samuihonestly.com is the only public
+  // address, so Google can't index a duplicate copy of the site.
+  "workers_dev": false,
+
+  // Preview URLs for non-production branches
+  "preview_urls": true
+}
