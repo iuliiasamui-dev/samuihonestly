@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://samuihonestly.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority><lastmod>2026-08-16</lastmod></url>
-  <url><loc>https://samuihonestly.com/weather.html</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
-  <url><loc>https://samuihonestly.com/things-to-do.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
-  <url><loc>https://samuihonestly.com/where-to-stay.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
-  <url><loc>https://samuihonestly.com/where-to-eat.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
-  <url><loc>https://samuihonestly.com/what-to-bring.html</loc><changefreq>monthly</changefreq><priority>0.8</priority><lastmod>2026-08-16</lastmod></url>
+  <url><loc>https://samuihonestly.com/weather</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
+  <url><loc>https://samuihonestly.com/things-to-do</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
+  <url><loc>https://samuihonestly.com/where-to-stay</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
+  <url><loc>https://samuihonestly.com/where-to-eat</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-08-16</lastmod></url>
+  <url><loc>https://samuihonestly.com/what-to-bring</loc><changefreq>monthly</changefreq><priority>0.8</priority><lastmod>2026-08-16</lastmod></url>
 </urlset>
