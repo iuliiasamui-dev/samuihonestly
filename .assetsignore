@@ -1,0 +1,16 @@
+# Files Cloudflare should NOT publish as part of the site.
+# Same format as .gitignore. Without this, the whole .git directory
+# is served publicly at samuihonestly.com/.git/
+
+**/.git
+**/.github
+**/.wrangler
+**/node_modules
+**/.DS_Store
+**/Thumbs.db
+
+# Repo files that belong on GitHub, not on the live site
+README.md
+.gitignore
+.assetsignore
+wrangler.jsonc
