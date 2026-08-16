@@ -1,0 +1,52 @@
+# --- Secrets: never commit these ---
+.env
+.env.*
+*.key
+*.pem
+secrets.json
+credentials.json
+
+# --- Source media (large originals live outside the repo) ---
+media-source/
+*.psd
+*.ai
+*.CR2
+*.RAW
+*.heic
+
+# --- OS clutter ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Dependencies / build output (Phase 3) ---
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+.wrangler/
+
+# --- dbt (Phase 3) ---
+target/
+dbt_packages/
+logs/
+
+# --- Local notes not meant to be public ---
+CLAUDE.md
+NOTES.md
+TODO.local.md
