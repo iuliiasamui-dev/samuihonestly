@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your guide is downloading — Koh Samui, Honestly</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#F4F0E8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+    <div class="logo"><a href="/">koh samui, <b>honestly</b></a></div>
+    <div class="nav-links"><a href="/things-to-do">Things to do</a><a href="/where-to-stay">Where to stay</a><a href="/where-to-eat">Where to eat</a><a href="/what-to-bring">What to bring</a><a href="/weather">Weather &amp; cams</a></div>
+  </div></nav>
+
+<main class="wrap">
+<section class="sec sec-first">
+  <div class="capture reveal in">
+    <div class="eyebrow">On its way</div>
+    <h2>Your guide is downloading.</h2>
+    <p>If nothing happens in a few seconds, <a class="linkline" id="manual" href="assets/koh-samui-local-list.pdf" download="Koh Samui Local List — ai.yu0278.pdf">tap here to start it manually</a>.</p>
+
+    <!-- ============================================================
+         EMAIL OPT-IN — placeholder
+         Replace this whole block with the EmailOctopus embed form.
+         EmailOctopus → your list → Forms → Embedded → copy the HTML.
+         Keep the heading and the sub-line: they do the persuading.
+         ============================================================ -->
+    <div style="margin-top:44px;padding-top:34px;border-top:1px solid var(--line)">
+      <div class="eyebrow">One more thing</div>
+      <h2 style="margin-bottom:14px">Want the monthly island update?</h2>
+      <p style="max-width:46ch;margin-left:auto;margin-right:auto">What's actually happening on Samui that month — weather worth planning around, places that opened, places that stopped being worth it. Once a month. Unsubscribe whenever.</p>
+      <p class="consent" style="margin-top:26px">[ EmailOctopus embed form goes here ]</p>
+    </div>
+
+    <p style="margin-top:40px"><a class="btn btn-primary" href="/weather">See Koh Samui right now <span class="arrow">&rarr;</span></a></p>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <div class="reveal in">
+    <div class="foot-row">
+      <span>Made on Koh Samui. &copy; 2026 @ai.yu0278</span>
+      <span><a class="linkline" href="/">Home</a> &middot; <a class="linkline" href="/things-to-do">Things to do</a> &middot; <a class="linkline" href="/where-to-stay">Where to stay</a> &middot; <a class="linkline" href="/where-to-eat">Where to eat</a> &middot; <a class="linkline" href="/what-to-bring">What to bring</a> &middot; <a class="linkline" href="/weather">Weather &amp; cams</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Start the download automatically, just after the analytics beacon has fired.
+setTimeout(function(){
+  var a = document.createElement('a');
+  a.href = 'assets/koh-samui-local-list.pdf';
+  a.setAttribute('download', 'Koh Samui Local List — ai.yu0278.pdf');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}, 700);
+
+if (window.plausible) { window.plausible('Guide Download'); }
+</script>
+</body>
+</html>

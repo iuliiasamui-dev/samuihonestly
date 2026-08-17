@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /thanks
 
 Sitemap: https://samuihonestly.com/sitemap.xml
