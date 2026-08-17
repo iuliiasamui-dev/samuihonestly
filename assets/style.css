@@ -192,3 +192,25 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
   .qa-img{flex-direction:column;gap:16px}
   .qa-img>img{width:100%;flex:none;height:200px;order:-1;margin-top:0}
 }
+
+/* ---- mobile refinements ---- */
+@media(max-width:860px){
+  /* header: logo on one line, nav links smaller and scrollable instead of wrapping */
+  .nav-in{flex-wrap:wrap;gap:8px 14px;padding:12px 22px}
+  .logo{font-size:19px;white-space:nowrap;flex:0 0 auto}
+  .nav-links{
+    order:3;width:100%;font-size:13px;gap:18px;
+    overflow-x:auto;white-space:nowrap;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{white-space:nowrap;flex:0 0 auto}
+
+  /* hero: stop the headline running into the right edge */
+  .hero h1{font-size:clamp(28px,7.6vw,38px);max-width:100%;padding-right:8px}
+  .hero .sub{max-width:100%;padding-right:8px}
+  .page-head h1{max-width:100%;padding-right:8px}
+  .page-head .lede{max-width:100%;padding-right:8px}
+  .big{max-width:100%;padding-right:8px}
+  .lead{max-width:100% !important;padding-right:8px}
+}
