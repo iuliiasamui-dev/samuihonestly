@@ -219,3 +219,13 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
 .capture .linkline{color:var(--bone);background-image:linear-gradient(var(--ochre),var(--ochre));background-size:100% 1px}
 .capture .linkline:hover{color:var(--ochre)}
 .capture-split{margin-top:52px;padding-top:40px;border-top:1px solid rgba(244,240,232,.18)}
+
+/* long-form legal / text pages */
+.legal{max-width:66ch}
+.legal h1{margin-bottom:26px}
+.legal .lead{max-width:60ch;margin-bottom:46px;line-height:1.55}
+.legal h2{font-size:clamp(21px,2.3vw,27px);line-height:1.2;margin:54px 0 16px}
+.legal p{color:var(--ink-60);font-size:17px;line-height:1.78;margin:0 0 22px;max-width:66ch}
+.legal ul{margin:0 0 26px;padding-left:22px}
+.legal li{color:var(--ink-60);font-size:17px;line-height:1.78;margin-bottom:12px}
+.legal li b{color:var(--ink)}
