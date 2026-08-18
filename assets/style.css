@@ -247,3 +247,8 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
 .eo-form label,.eo-form span,.eo-form p,.eo-form small,.eo-form div{color:rgba(244,240,232,.78)!important}
 .eo-form a{color:var(--bone)!important;text-decoration:underline!important}
 .eo-form input[type=checkbox]{accent-color:var(--ochre);width:16px;height:16px;margin-right:8px}
+
+/* catch-all: any text the embed renders (incl. the post-subscribe success message) */
+.eo-form *{color:rgba(244,240,232,.85)!important}
+.eo-form input[type=email],.eo-form input[type=text]{color:var(--ink)!important}
+.eo-form button,.eo-form input[type=submit],.eo-form [type=submit]{color:var(--ink)!important}
