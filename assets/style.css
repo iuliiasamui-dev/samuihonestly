@@ -252,3 +252,11 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
 .eo-form *{color:rgba(244,240,232,.85)!important}
 .eo-form input[type=email],.eo-form input[type=text]{color:var(--ink)!important}
 .eo-form button,.eo-form input[type=submit],.eo-form [type=submit]{color:var(--ink)!important}
+
+/* success / error text the embed injects, wherever it lands inside the dark panel */
+.capture [class*="success"],.capture [class*="Success"],
+.capture [class*="message"],.capture [class*="Message"],
+.capture [class*="octopus"],.capture [class*="Octopus"]{color:rgba(244,240,232,.85)!important}
+.capture form *{color:rgba(244,240,232,.85)!important}
+.capture form input[type=email],.capture form input[type=text]{color:var(--ink)!important}
+.capture form button,.capture form [type=submit]{color:var(--ink)!important}
