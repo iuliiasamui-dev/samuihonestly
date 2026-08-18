@@ -229,3 +229,12 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
 .legal ul{margin:0 0 26px;padding-left:22px}
 .legal li{color:var(--ink-60);font-size:17px;line-height:1.78;margin-bottom:12px}
 .legal li b{color:var(--ink)}
+
+/* EmailOctopus embedded form inside the dark .capture panel */
+.eo-form{margin-top:26px;max-width:34rem}
+.eo-form iframe{width:100%!important;border:0}
+.eo-form input[type=email],.eo-form input[type=text]{width:100%;padding:15px 16px;font:inherit;font-size:16px;color:var(--ink);background:var(--bone);border:1px solid rgba(244,240,232,.25);border-radius:3px}
+.eo-form button,.eo-form input[type=submit]{margin-top:12px;padding:14px 26px;font:inherit;font-weight:500;font-size:16px;color:var(--ink);background:var(--ochre);border:0;border-radius:3px;cursor:pointer;transition:transform .25s}
+.eo-form button:hover,.eo-form input[type=submit]:hover{transform:translateY(-1px)}
+.eo-form label,.eo-form p,.eo-form div{color:rgba(244,240,232,.72)}
+.eo-form a{color:var(--bone)}
