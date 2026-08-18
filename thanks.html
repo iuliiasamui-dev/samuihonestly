@@ -72,6 +72,26 @@ setTimeout(function(){
 }, 700);
 
 if (window.plausible) { window.plausible('Guide Download'); }
+
+// The embedded form paints its own messages with inline colours that external CSS
+// cannot override. Force every bit of text it injects to read on the dark panel.
+(function(){
+  var CREAM = 'rgba(244,240,232,.88)';
+  function paint(root){
+    if(!root || !root.querySelectorAll) return;
+    root.querySelectorAll('*').forEach(function(el){
+      var t = el.tagName;
+      if(t === 'INPUT' || t === 'BUTTON' || t === 'SELECT' || t === 'TEXTAREA') return;
+      if(el.querySelector && el.querySelector('input,button')) { /* wrapper: still safe to colour */ }
+      el.style.setProperty('color', CREAM, 'important');
+      if(el.shadowRoot) paint(el.shadowRoot);
+    });
+  }
+  var host = document.querySelector('.eo-form');
+  if(!host) return;
+  paint(host);
+  new MutationObserver(function(){ paint(host); }).observe(host, {childList:true, subtree:true});
+})();
 </script>
 </body>
 </html>
