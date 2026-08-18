@@ -238,3 +238,12 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.05;l
 .eo-form button:hover,.eo-form input[type=submit]:hover{transform:translateY(-1px)}
 .eo-form label,.eo-form p,.eo-form div{color:rgba(244,240,232,.72)}
 .eo-form a{color:var(--bone)}
+
+/* force the EmailOctopus embed to match the dark panel */
+.eo-form *{font-family:'Inter Tight',system-ui,sans-serif!important}
+.eo-form input[type=email],.eo-form input[type=text]{background:var(--bone)!important;color:var(--ink)!important;border:1px solid rgba(244,240,232,.3)!important;border-radius:3px!important;padding:15px 16px!important;font-size:16px!important}
+.eo-form input::placeholder{color:rgba(30,26,23,.45)!important}
+.eo-form button,.eo-form input[type=submit],.eo-form [type=submit]{background:var(--ochre)!important;color:var(--ink)!important;border:0!important;border-radius:3px!important;padding:15px 26px!important;font-size:16px!important;font-weight:500!important;cursor:pointer!important}
+.eo-form label,.eo-form span,.eo-form p,.eo-form small,.eo-form div{color:rgba(244,240,232,.78)!important}
+.eo-form a{color:var(--bone)!important;text-decoration:underline!important}
+.eo-form input[type=checkbox]{accent-color:var(--ochre);width:16px;height:16px;margin-right:8px}
