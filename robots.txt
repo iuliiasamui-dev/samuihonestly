@@ -1,5 +1,10 @@
 User-agent: *
 Allow: /
 Disallow: /thanks
+Disallow: /guides
+Disallow: /area-guide
+Disallow: /when-to-come
+Disallow: /4-day-guide
+Disallow: /thank-you
 
 Sitemap: https://samuihonestly.com/sitemap.xml
