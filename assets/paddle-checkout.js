@@ -22,7 +22,7 @@
   /* --- CONFIG ------------------------------------------------------------ */
   /* Paddle > Developer tools > Authentication > Client-side tokens.
      Safe in public code: it can only read prices and open checkouts. */
-  var TOKEN       = 'live_REPLACE_ME';
+  var TOKEN       = 'live_1dde6b801c4262715d4f06350a8';
   var SUCCESS_URL = 'https://samuihonestly.com/thank-you';
   /* ----------------------------------------------------------------------- */
 
