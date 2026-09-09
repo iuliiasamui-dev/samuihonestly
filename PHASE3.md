@@ -168,17 +168,89 @@ Zero rows is the pass condition.
 
 ---
 
-# Step 2 — make TikTok traffic attributable
+# Step 2 — make TikTok traffic attributable ✅ BUILT
 
-Right now every visitor arrives on the same bio link, so no video can be distinguished
-from another. Until this is fixed, "which video produced subscribers" has no answer no
-matter how good the warehouse is.
+TikTok gives a profile one bio link, so every video points at the same URL and no video
+can be told from another. `/go/<slug>` fixes that.
 
-- **Cheap:** change the bio link each time you post —
-  `samuihonestly.com/?utm_source=tiktok&utm_medium=bio&utm_content=2026-09-09-nathon`
-- **Better:** add a `/go/<slug>` route to the Worker that redirects to the site with the
-  UTMs attached and logs the click. Then the bio link stays short and the mapping lives
-  in code rather than in your memory.
+**One extra table to create** — D1 → Console:
+
+```sql
+CREATE TABLE IF NOT EXISTS link_targets (
+  slug         TEXT PRIMARY KEY,
+  dest         TEXT NOT NULL DEFAULT '/',
+  utm_campaign TEXT,
+  note         TEXT,
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+## How you use it
+
+When you post a video, put this in your TikTok bio, changing the last part:
+
+```
+samuihonestly.com/go/nathon-sunset
+```
+
+That's it. The slug does not need registering first — an unknown slug still redirects to
+the homepage carrying `utm_content=nathon-sunset`, so the link works the moment you
+invent it. Register one only when you want it to land somewhere specific:
+
+```sql
+INSERT INTO link_targets (slug, dest, utm_campaign, note) VALUES
+  ('nathon-sunset', '/where-to-stay', 'area-guides', 'Nathon sunset video, 9 Sep');
+```
+
+Slugs are lowercase letters, digits and hyphens.
+
+## What it records
+
+Every click writes a `bio_click` row **server-side** — no cookie, no visitor id, no IP,
+no user-agent. Nothing touches the visitor's device, so it needs no consent and is
+counted even for people who decline the banner. That makes it the one number in the whole
+pipeline with no consent bias in it, and the honest denominator for everything else:
+
+```sql
+-- clicks per video, and how many turned into a consented session
+SELECT utm_content AS video,
+       SUM(event_name = 'bio_click') AS clicks,
+       COUNT(DISTINCT CASE WHEN event_name = 'page_view' THEN session_id END) AS sessions
+FROM raw_events
+WHERE utm_source = 'tiktok'
+GROUP BY 1 ORDER BY clicks DESC;
+```
+
+The gap between those two columns is your consent decline rate plus the people who bounce
+before the page loads. Worth watching — it is the honest cost of the banner.
+
+---
+
+# Step 3 — TikTok data + orchestration 🔨 STARTED
+
+**Built:** `pipeline/parse_tiktok_csv.py` and `.github/workflows/tiktok-csv.yml`.
+
+TikTok Studio exports one CSV per tab, each with its own columns, date format and
+language-dependent headers. The parser flattens any of them into one long table —
+`export_tab, metric_date, metric_name, metric_value, source_file, loaded_at` — so a new
+column in a future export becomes new rows rather than a schema migration.
+
+**How you run it, with no terminal:** upload the CSV to `data/tiktok/raw/` through the
+GitHub web UI. The Action parses it and commits the normalised table to
+`data/tiktok/normalised/`. Open the Action's log afterwards — it names any column the
+parser had no alias for, which is how the mapping gets corrected.
+
+Two deliberate choices:
+
+- **Nothing is deduplicated on load.** The same date appears in several exports with
+  different values, because TikTok's numbers settle over about 48 hours. Every version is
+  kept so the dbt layer can decide which one wins. Collapsing it here would throw that
+  choice away before anyone made it.
+- **Unrecognised columns are kept, not dropped.** Silently discarding a column is how you
+  find out six months later that TikTok started exporting something useful.
+
+**Still to do:** the EmailOctopus extractor, the D1 extractor, and loading all three into
+MotherDuck.
 
 # Step 3 — extractors + orchestration
 

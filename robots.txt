@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /go
 Disallow: /thanks
 Disallow: /guides
 Disallow: /area-guide

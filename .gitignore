@@ -46,6 +46,10 @@ target/
 dbt_packages/
 logs/
 
+# --- Analytics exports: real numbers, deliberately not public ---
+# The repo is public. TikTok daily views and follower counts are not.
+data/
+
 # --- Local notes not meant to be public ---
 CLAUDE.md
 NOTES.md
