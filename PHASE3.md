@@ -29,7 +29,7 @@ that part happens by clicking in the Cloudflare dashboard, once.
 
 ---
 
-# Step 1 — collector + raw layer  ← you are here
+# Step 1 — collector + raw layer ✅ LIVE AND VERIFIED
 
 ## What is already written
 
@@ -262,12 +262,68 @@ before the page loads. Worth watching — it is the honest cost of the banner.
 
 # Step 3 — TikTok data + orchestration 🔨 STARTED
 
-**Built:** `pipeline/parse_tiktok_csv.py` and `.github/workflows/tiktok-csv.yml`.
+**Use `pipeline/consolidate_tiktok.py`.** `pipeline/parse_tiktok_csv.py` is **superseded**
+— it was written against guessed CSV column names before a real export had been seen, and
+TikTok exports `.xlsx`, not `.csv`. Delete it; a plausible-looking script that has never
+touched real data is worse than no script.
 
-TikTok Studio exports one CSV per tab, each with its own columns, date format and
-language-dependent headers. The parser flattens any of them into one long table —
-`export_tab, metric_date, metric_name, metric_value, source_file, loaded_at` — so a new
-column in a future export becomes new rows rather than a schema migration.
+```
+python pipeline/consolidate_tiktok.py "Tiktok downloads" --out "Tiktok downloads/consolidated"
+```
+
+## What TikTok actually exports
+
+Studio has a Download button on every tab, but what comes out is narrower than it looks:
+
+| Tab | Grain | Rows in one export |
+|---|---|---|
+| Overview | one row per day | 364 |
+| Viewers | one row per day | 365 |
+| FollowerHistory | one row per day | 364 |
+| FollowerActivity | day × hour | 168 (7 days only) |
+| FollowerGender / TopTerritories | current distribution | 3 / 11 |
+| **Content** | one row per video | **only the page of top posts on screen** |
+
+That last row is the catch. There is no "export all videos" — you page through the top
+posts table and export each page, which produces many heavily overlapping files. The
+first real run took **16 files, 240 rows, and 58 distinct videos**.
+
+## Three outputs, not one
+
+| File | Grain |
+|---|---|
+| `tiktok_daily.csv` | one row per date — Overview + Viewers + FollowerHistory joined |
+| `tiktok_videos.csv` | one row per video, deduplicated |
+| `tiktok_snapshots.csv` | gender, territories, hourly activity — long format |
+
+Three because there are three grains. Overview, Viewers and FollowerHistory *do* share a
+grain, so joining them into one daily table is a real consolidation. Forcing the video
+rows and the distributions in beside them would not be.
+
+## The two problems the script exists to solve
+
+**No year on any date.** Every date reads `September 9` or `March 30`. Parsing that
+naively collapses a year of history into one ambiguous year and silently destroys the
+ordering. The script walks each series in order, rolls the year at the December → January
+boundary, and anchors the result so the series ends on or before the export date.
+Video post dates get the same treatment: the most recent occurrence at or before today.
+
+**Duplicate rows that disagree.** The same video appears in up to 16 files, and in the
+first run 16 rows disagreed — always by one or two views (`86226` vs `86225`), because
+counts were still ticking up while the files were being downloaded. These are monotonic
+lifetime counters, so the largest reading is the freshest: max wins. Every disagreement
+is printed rather than quietly resolved, because a silent tie-break is how a number you
+trust turns out to be arbitrary.
+
+## Known data-quality notes
+
+- **The last day or two are provisional.** TikTok's numbers settle over roughly 48 hours,
+  and the tabs do not settle together — the first run had a Viewers row for 8 September
+  with no matching Overview or FollowerHistory row.
+- **A video older than twelve months will be misdated.** Post dates carry no year, so the
+  script assumes the most recent match. Nothing in the export can disambiguate it.
+- **Content coverage is only as complete as your paging.** 58 videos is what was on
+  screen, not the full archive.
 
 **Where the data lives:** `data/` is in `.gitignore`. This repo is public and the daily
 view and follower numbers are not — the follower count on the profile is public, the
@@ -286,30 +342,19 @@ nothing, which is worse than not existing. Two ways to get the automation back:
   them there. No automation, but nothing to maintain either — reasonable while this is
   one download a week.
 
-Either way the parser itself is unchanged. Only where it runs differs.
+Either way the script itself is unchanged. Only where it runs differs.
 
-Two deliberate choices:
+## Still to do in Step 3
 
-- **Nothing is deduplicated on load.** The same date appears in several exports with
-  different values, because TikTok's numbers settle over about 48 hours. Every version is
-  kept so the dbt layer can decide which one wins. Collapsing it here would throw that
-  choice away before anyone made it.
-- **Unrecognised columns are kept, not dropped.** Silently discarding a column is how you
-  find out six months later that TikTok started exporting something useful.
-
-**Still to do:** the EmailOctopus extractor, the D1 extractor, and loading all three into
-MotherDuck.
-
-# Step 3 — extractors + orchestration
-
-- `pipeline/extract_events.py` — pull `raw_events` from D1 over the API, `WHERE ingest_day >= watermark`, write Parquet
+- `pipeline/extract_events.py` — pull `raw_events` from D1 over the API,
+  `WHERE ingest_day >= watermark`, write Parquet
 - `pipeline/extract_emailoctopus.py` — subscribers and status, paginated, incremental
-- `pipeline/extract_tiktok.py` — parse the CSV export TikTok gives you
-- GitHub Actions on a nightly cron, with secrets and a failure notification
+- Load all three sources into MotherDuck
+- A nightly schedule once there is enough moving to justify one
 
-The parts worth writing up honestly: idempotency (re-running yesterday must not
-double-count), late-arriving TikTok stats (they settle over ~48h), and subscriber status
-as a slowly-changing dimension rather than an overwrite.
+The parts worth writing up honestly when you do: idempotency (re-running yesterday must
+not double-count), late-arriving TikTok stats, and subscriber status as a slowly-changing
+dimension rather than an overwrite.
 
 # Step 4 — dbt Core on MotherDuck
 
