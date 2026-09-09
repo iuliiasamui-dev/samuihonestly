@@ -1,31 +1,36 @@
 /* ---------------------------------------------------------------------------
-   samuihonestly — event collector (Phase 3)
+   samuihonestly — Worker (Phase 3)
    ---------------------------------------------------------------------------
-   Runs on the same Worker that serves the site, so events are posted
-   same-origin: no CORS, no third-party domain, nothing for an ad-blocker to
-   recognise and drop.
+   Two routes, everything else falls through to the static site:
 
-   Routing: static assets are matched first by the platform. Only requests that
-   match no file reach this code. /e is the collector; everything else is
-   handed back to the asset server so the site behaves exactly as before.
+     POST /e        event collector
+     GET  /go/<slug>  tracked redirect for the TikTok bio link
+
+   Events are posted same-origin, so there is no third-party domain for an
+   ad-blocker to recognise and drop.
 --------------------------------------------------------------------------- */
 
 const MAX_BODY_BYTES = 32 * 1024;
 const MAX_BATCH = 20;
 
-/* An allow-list, not a block-list. A typo in a page's tracking call should
-   show up as a reject you can see, not as a new event name nobody defined. */
+/* An allow-list, not a block-list. A typo in a page's tracking call should show
+   up as a reject you can see, not as a new event name nobody defined.
+   bio_click is written server-side by /go and never arrives through /e; it is
+   listed here so this stays the single place the event vocabulary is defined. */
 const ALLOWED_EVENTS = new Set([
   'page_view',
   'pdf_download',
   'email_signup',
   'outbound_click',
   'buy_click',
-  'consent_granted'
+  'consent_granted',
+  'bio_click'
 ]);
 
+const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === '/e') {
@@ -39,10 +44,127 @@ export default {
       });
     }
 
+    if (url.pathname === '/go' || url.pathname.startsWith('/go/')) {
+      return go(request, env, ctx, url);
+    }
+
     return env.ASSETS.fetch(request);
   }
 };
 
+/* ---------------------------------------------------------------------------
+   /go/<slug> — the tracked bio link
+   ---------------------------------------------------------------------------
+   TikTok gives a profile exactly one bio link, so every video points at the
+   same URL and no video can be told from another. This route fixes that: put
+   samuihonestly.com/go/<slug> in the bio, change <slug> when you post, and each
+   video's traffic arrives carrying its own utm_content.
+
+   An unknown slug still works — it redirects to the homepage tagged with the
+   slug anyway. That matters: it means you can invent a slug while publishing a
+   video and register a nicer destination for it later, or never. The link is
+   never broken by forgetting to set it up first.
+
+   The click is logged server-side with no cookie, no visitor id, no IP and no
+   user-agent. Nothing is stored on the visitor's device, so this needs no
+   consent and is counted even for people who later decline the banner. It is
+   the one number in the whole pipeline that has no consent bias in it.
+--------------------------------------------------------------------------- */
+async function go(request, env, ctx, url) {
+  const slug = url.pathname.slice(4).replace(/\/+$/, '').toLowerCase();
+  const valid = SLUG_RE.test(slug);
+
+  let dest = '/';
+  let campaign = null;
+  let known = false;
+
+  if (valid) {
+    try {
+      const row = await env.DB.prepare(
+        'SELECT dest, utm_campaign FROM link_targets WHERE slug = ?1'
+      ).bind(slug).first();
+
+      if (row) {
+        known = true;
+        dest = row.dest || '/';
+        campaign = row.utm_campaign || null;
+      }
+    } catch (err) {
+      /* A lookup failure must not break the link. Fall through to the
+         homepage — a redirect that works beats a redirect that is correct. */
+      console.error('[go] lookup failed', err && err.message);
+    }
+  }
+
+  let target;
+  try {
+    target = new URL(dest, url.origin);
+    if (target.origin !== url.origin) target = new URL('/', url.origin);
+  } catch (err) {
+    target = new URL('/', url.origin);
+  }
+
+  target.searchParams.set('utm_source', 'tiktok');
+  target.searchParams.set('utm_medium', 'bio');
+  if (valid) target.searchParams.set('utm_content', slug);
+  if (campaign) target.searchParams.set('utm_campaign', campaign);
+
+  /* waitUntil keeps the redirect instant — the visitor is not waiting on a
+     database write they will never see. */
+  ctx.waitUntil(logClick(env, request, valid ? slug : null, known, campaign));
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: target.toString(),
+      'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer'
+    }
+  });
+}
+
+async function logClick(env, request, slug, known, campaign) {
+  const cf = request.cf || {};
+  const now = new Date().toISOString();
+
+  try {
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO raw_events (
+         event_id, received_at, occurred_at, ingest_day, event_name,
+         visitor_id, session_id, page_path, landing_path, referrer,
+         utm_source, utm_medium, utm_campaign, utm_content, utm_term,
+         country, device_type, props
+       ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)`
+    )
+      .bind(
+        crypto.randomUUID(),
+        now,
+        now,
+        now.slice(0, 10),
+        'bio_click',
+        null,               // no visitor id — nothing is stored on the device
+        null,               // no session either; this happens before the site loads
+        slug ? '/go/' + slug : '/go',
+        null,
+        null,
+        'tiktok',
+        'bio',
+        campaign,
+        slug,
+        null,
+        typeof cf.country === 'string' ? cf.country.slice(0, 2) : null,
+        null,
+        JSON.stringify({ slug: slug, registered: known })
+      )
+      .run();
+  } catch (err) {
+    console.error('[go] click log failed', err && err.message);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   /e — the event collector
+--------------------------------------------------------------------------- */
 async function collect(request, env) {
   const raw = await request.text();
 
@@ -67,7 +189,7 @@ async function collect(request, env) {
     return json({ error: 'batch too large' }, 413);
   }
 
-  /* Server-side enrichment. One timestamp for the whole batch so a batch is
+  /* Server-side enrichment. One timestamp for the whole batch, so a batch is
      obviously a batch when you look at the raw table. */
   const cf = request.cf || {};
   const receivedAt = new Date().toISOString();

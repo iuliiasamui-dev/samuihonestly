@@ -71,3 +71,24 @@ CREATE TABLE IF NOT EXISTS raw_event_rejects (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rejects_at ON raw_event_rejects (rejected_at);
+
+-- ---------------------------------------------------------------------------
+-- Bio-link targets, read by the /go/<slug> route.
+--
+-- This is configuration, not data — the one mutable table in the database. It
+-- lives in D1 rather than in a file in the repo so that registering a new video
+-- is one INSERT in the dashboard console, with no deploy. Posting a video
+-- should not require a code change.
+--
+-- A slug that isn't in this table still redirects (to the homepage, tagged with
+-- the slug), so a link works the moment you invent it. Registering it only
+-- changes where it lands.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS link_targets (
+  slug         TEXT PRIMARY KEY,
+  dest         TEXT NOT NULL DEFAULT '/',   -- a path on this site, e.g. /where-to-stay
+  utm_campaign TEXT,                        -- optional grouping, e.g. area-guides
+  note         TEXT,                        -- which video this is, for your own memory
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
