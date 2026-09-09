@@ -5,10 +5,34 @@
   "name": "samuihonestly",
   "compatibility_date": "2026-08-16",
 
+  // Phase 3: the site is still static, but a Worker now sits in front of it to
+  // collect first-party events at /e. Assets are matched first; only requests
+  // that match no file reach the Worker, which hands everything except /e
+  // straight back to the asset server.
+  "main": "worker/index.js",
+
   // Serve the repository root as a static site
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   },
+
+  // Raw event layer.
+  //
+  // Created in the Cloudflare dashboard on 9 September 2026.
+  // The id is not a secret — it identifies the database, it does not grant
+  // access to it. Access comes from this Worker holding the binding below.
+  //
+  // This file is the source of truth for the Worker's bindings: every deploy
+  // rewrites them from here. A binding added by hand in the dashboard's
+  // Settings screen would be wiped on the next deploy, so don't add one there.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "samuihonestly-events",
+      "database_id": "952fc342-38a5-427c-9390-e2623b734e72"
+    }
+  ],
 
   // Keep observability on — free, and useful for debugging deploys
   "observability": {

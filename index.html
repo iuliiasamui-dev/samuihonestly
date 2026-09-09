@@ -128,5 +128,6 @@ fetch('assets/stats.json',{cache:'no-store'}).then(function(r){return r.ok?r.jso
 var dl=document.getElementById('dl');
 if(dl){dl.addEventListener('click',function(){if(window.plausible){window.plausible('Guide Download');}});}
 </script>
+<script defer src="/assets/track.js"></script>
 </body>
 </html>

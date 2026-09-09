@@ -11,6 +11,12 @@
 
 # Repo files that belong on GitHub, not on the live site
 README.md
+PHASE3.md
 .gitignore
 .assetsignore
 wrangler.jsonc
+
+# Phase 3 — server-side code and pipeline. These run, they are not served.
+worker/
+pipeline/
+dbt/
