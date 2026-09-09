@@ -125,12 +125,18 @@
 
   /* --- sending ---------------------------------------------------------- */
 
-  function track(name, props, once) {
+  /* onceKey: when given, the event fires at most once per session for that key.
+     The key is the THING being counted, not the event name. Two different
+     guides downloaded in one session are two downloads; one guide reached
+     twice — the auto-download on /thanks plus a click on the manual link
+     underneath it — is one download counted once. */
+  function track(name, props, onceKey) {
     if (consent === 'denied') return;
 
-    if (once) {
-      if (fired[name]) return;
-      fired[name] = true;
+    if (onceKey) {
+      var key = name + '|' + onceKey;
+      if (fired[key]) return;
+      fired[key] = true;
     }
 
     var ev = {
@@ -248,9 +254,13 @@
   function wire() {
     track('page_view', { title: document.title.slice(0, 120) });
 
-    /* thanks.html triggers its download from a script, so no click to catch. */
+    /* thanks.html triggers its download from a script, so no click to catch.
+       The page also shows a manual "tap here" link to the same file, so both
+       paths share a onceKey and only the first one counts. */
     if (/^\/thanks/.test(window.location.pathname)) {
-      track('pdf_download', { guide: 'koh-samui-local-list', trigger: 'auto' }, true);
+      track('pdf_download',
+            { guide: 'koh-samui-local-list', trigger: 'auto' },
+            'koh-samui-local-list');
     }
 
     document.addEventListener('click', function (e) {
@@ -259,10 +269,8 @@
         var href = a.getAttribute('href') || '';
 
         if (a.hasAttribute('download') || /\.pdf($|\?)/i.test(href)) {
-          track('pdf_download', {
-            guide: href.split('/').pop().replace(/\.pdf.*$/i, ''),
-            trigger: 'click'
-          });
+          var guide = href.split('/').pop().replace(/\.pdf.*$/i, '');
+          track('pdf_download', { guide: guide, trigger: 'click' }, guide);
           return;
         }
 
