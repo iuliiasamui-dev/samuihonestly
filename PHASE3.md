@@ -168,10 +168,24 @@ Zero rows is the pass condition.
 
 ---
 
-# Step 2 — make TikTok traffic attributable ✅ BUILT
+# Step 2 — make TikTok traffic attributable ✅ BUILT AND VERIFIED
 
 TikTok gives a profile one bio link, so every video points at the same URL and no video
 can be told from another. `/go/<slug>` fixes that.
+
+**Verified live, 9 September 2026.** Four `bio_click` rows confirmed: an unregistered
+slug falling through to the homepage, a registered slug routing to its destination, and
+the same slug logged with `registered` flipping false → true either side of the INSERT —
+which proves the lookup happens per request rather than being baked in at deploy.
+
+**How the live bio link is wired.** The TikTok bio still says `samuihonestly.com/tt`. A
+Cloudflare Redirect Rule sends `/tt` → `/go/tt`, and the Worker takes it from there. This
+matters because **Cloudflare redirect rules run at the edge, before Workers execute** — an
+earlier version of that rule pointed straight at `/weather` and every click bypassed the
+collector entirely, invisibly. If bio clicks ever stop appearing, check that rule first.
+
+Because the bio URL never changes, anyone who saved or screenshotted the old link is
+still tracked.
 
 **One extra table to create** — D1 → Console:
 
@@ -202,7 +216,27 @@ INSERT INTO link_targets (slug, dest, utm_campaign, note) VALUES
   ('nathon-sunset', '/where-to-stay', 'area-guides', 'Nathon sunset video, 9 Sep');
 ```
 
+Changing where an existing slug lands is one statement, live on the next click — no
+deploy, no upload, no code change:
+
+```sql
+UPDATE link_targets SET dest = '/' WHERE slug = 'tt';
+```
+
+That is exactly why this mapping lives in a table rather than in the Worker's source.
+
 Slugs are lowercase letters, digits and hyphens.
+
+**How often to change the slug.** Not every video. You post twice a day, and most of
+those — the weather clips, the 6am series — send nobody to a website. Minting 730 slugs a
+year, most with single-digit clicks, is noise rather than data, and it turns publishing
+into an admin task, which breaks the rule this whole account runs on.
+
+Keep `tt` as the standing link. Swap in a dated slug only when a video has a real call to
+action — an area guide, a "where to stay", anything whose overlay tells people to check
+the link. Two or three changes a week, and those are the only videos where the answer is
+interesting anyway. Everything else lands in `tt`, which is an honest label for general
+bio traffic.
 
 ## What it records
 
@@ -235,10 +269,24 @@ language-dependent headers. The parser flattens any of them into one long table 
 `export_tab, metric_date, metric_name, metric_value, source_file, loaded_at` — so a new
 column in a future export becomes new rows rather than a schema migration.
 
-**How you run it, with no terminal:** upload the CSV to `data/tiktok/raw/` through the
-GitHub web UI. The Action parses it and commits the normalised table to
-`data/tiktok/normalised/`. Open the Action's log afterwards — it names any column the
-parser had no alias for, which is how the mapping gets corrected.
+**Where the data lives:** `data/` is in `.gitignore`. This repo is public and the daily
+view and follower numbers are not — the follower count on the profile is public, the
+day-by-day curve behind it is a different thing. The code is the portfolio artefact; the
+numbers do not have to be.
+
+**Consequence, stated plainly:** the GitHub Action in
+`.github/workflows/tiktok-csv.yml` cannot work in this repo, because the file it would
+parse is never committed. Do not create that workflow here — it would sit green and do
+nothing, which is worse than not existing. Two ways to get the automation back:
+
+- **A private data repo.** `samuihonestly-data`, private, holding `data/` plus a copy of
+  the parser and the workflow. Uploads and runs work exactly as designed, and the public
+  repo keeps the code. Costs you one duplicated Python file.
+- **Run it locally instead.** Keep the CSVs in `Social media/data/tiktok/raw/` and parse
+  them there. No automation, but nothing to maintain either — reasonable while this is
+  one download a week.
+
+Either way the parser itself is unchanged. Only where it runs differs.
 
 Two deliberate choices:
 
